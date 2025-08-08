@@ -134,38 +134,47 @@
   <button onclick="press('ArrowDown')">⬇️</button>
   <button onclick="press('ArrowRight')">➡️</button>
 </div>
+  
 <script>
 function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
 </script>
+  
 <script>
 window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
   const ctx = c.getContext('2d');
   c.focus();
 
-  // --- IMAGES ---
+  // ---- ASSETS (adjust paths to where files actually are) ----
   const sheet = new Image();
-  sheet.src = 'cat_walk.png';         // change to 'assets/cat_walk.png' if needed
+  sheet.src = 'cat_walk.png';           // e.g. 'assets/cat_walk.png'
+  sheet.onerror = () => console.error('❌ cat_walk not found at:', sheet.src);
 
   const snackImg = new Image();
-  snackImg.src = 'penguin.png';       // <-- put your penguin file here (correct path!)
+  snackImg.src = 'penguin.png';         // e.g. 'assets/penguin.png'
+  snackImg.onerror = () => console.error('❌ penguin not found at:', snackImg.src);
 
-  // --- STATE ---
-  let x = c.width / 2, y = c.height / 2, score = 0, dir = 1;
+  // ---- STATE ----
+  let x = c.width/2, y = c.height/2, score = 0, dir = 1;
   const keys = {};
+  const COLS = 3;                        // your sheet has 3 usable frames
   const FRAME_MS = 100;
-  const COLS = 3;                      // your sprite sheet has 3 usable frames
-  let frame = 0, acc = 0, FW = 0, FH = 0;
 
-  let snack = { x: 60, y: 60 };
+  let frame = 0, acc = 0, FW = 0, FH = 0;
+  let spriteReady = false, snackReady = false;
 
   sheet.onload = () => {
     FW = sheet.width / COLS;
     FH = sheet.height;
-    requestAnimationFrame(loop);
+    spriteReady = true;
+    console.log('✅ cat sheet loaded:', sheet.width+'x'+sheet.height, 'FW', FW, 'FH', FH);
   };
+  snackImg.onload = () => { snackReady = true; };
 
-  function update(dt) {
+  // snack
+  let snack = { x: 60, y: 60 };
+
+  function update(dt){
     const sp = 3;
     const moving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
 
@@ -181,7 +190,6 @@ window.addEventListener('load', () => {
       frame = 0;
     }
 
-    // collision with snack (radius tuned to image size)
     if (Math.hypot(x - snack.x, y - snack.y) < 28) {
       score++;
       snack.x = 20 + Math.random() * (c.width  - 40);
@@ -189,42 +197,49 @@ window.addEventListener('load', () => {
     }
   }
 
-  function drawCat() {
-    const TARGET_H = 110;
-    const scale = TARGET_H / FH;
-    const TARGET_W = FW * scale;
-    const sx = frame * FW;
+  function drawCat(){
+    if (spriteReady) {
+      const TARGET_H = 110;
+      const scale = TARGET_H / FH;
+      const TARGET_W = FW * scale;
+      const sx = frame * FW;
 
-    ctx.save();
-    ctx.translate(x, y);
-    if (dir === -1) ctx.scale(-1, 1);
-    ctx.drawImage(sheet, sx, 0, FW, FH, -TARGET_W/2, -TARGET_H/2, TARGET_W, TARGET_H);
-    ctx.restore();
+      ctx.save();
+      ctx.translate(x, y);
+      if (dir === -1) ctx.scale(-1, 1);
+      ctx.drawImage(sheet, sx, 0, FW, FH, -TARGET_W/2, -TARGET_H/2, TARGET_W, TARGET_H);
+      ctx.restore();
+    } else {
+      // fallback while loading
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
+    }
   }
 
-  function drawSnack() {
-    const size = 32; // size of penguin on canvas
-    if (snackImg.complete) {
+  function drawSnack(){
+    const size = 32;
+    if (snackReady) {
       ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
     } else {
-      // fallback dot while image loads
+      // fallback dot while loading
       ctx.fillStyle = '#00c47d';
       ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
     }
   }
 
   let last = performance.now();
-  function loop(now) {
+  function loop(now = performance.now()){
     const dt = now - last; last = now;
     update(dt);
-    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.clearRect(0,0,c.width,c.height);
     drawSnack();
     drawCat();
-    ctx.fillStyle = '#222';
-    ctx.font = '14px Poppins, sans-serif';
+    ctx.fillStyle = '#222'; ctx.font = '14px Poppins, sans-serif';
     ctx.fillText('Score: ' + score, 10, 20);
     requestAnimationFrame(loop);
   }
+  // start immediately (no dependency on image onload)
+  loop();
 
   // controls
   window.addEventListener('keydown', e => {
@@ -235,6 +250,7 @@ window.addEventListener('load', () => {
   window.addEventListener('keyup', e => { keys[e.key] = false; });
 });
 </script>
+  
     <section class="full">
       <div class="card">
         <h2>Meme Gallery</h2>
@@ -259,6 +275,7 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
 
