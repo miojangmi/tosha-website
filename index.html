@@ -2,85 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>$TOSH - Tosha Token</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>$TOSH • Tosha Token</title>
+  <link rel="icon" type="image/png" href="tosha_logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      text-align: center;
+    :root{
+      --bg:#f7faf8;--card:#ffffff;--ink:#222;--muted:#6b7280;--brand:#00c47d;--brand2:#1d9bf0;--accent:#f59e0b;
+      --radius:18px;--shadow:0 10px 24px rgba(0,0,0,.08);
     }
-    header {
-      background: #c4f1be;
-      padding: 2rem 1rem;
-    }
-    header img {
-      width: 120px;
-      height: auto;
-      border-radius: 50%;
-    }
-    h1 {
-      font-size: 2.2rem;
-      margin: 1rem 0 0.5rem;
-    }
-    p.tagline {
-      font-size: 1.1rem;
-      color: #666;
-    }
-    section {
-      padding: 2rem;
-    }
-    .info {
-      margin: 2rem auto;
-      max-width: 600px;
-      text-align: left;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-      padding: 1.5rem;
-    }
-    .info h2 {
-      color: #333;
-      margin-top: 0;
-    }
-    .info p {
-      word-break: break-word;
-    }
-    a {
-      color: #1d9bf0;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    footer {
-      padding: 1rem;
-      font-size: 0.9rem;
-      color: #999;
-    }
-  </style>
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    header.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#aaf1c4,#7be3a0);border-radius:var(--radius);padding:48px 28px;box-shadow:var(--shadow)}
+    .hero-inner{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center}
+    .brand{display:flex;align-items:center;gap:16px}
+    .brand img{width:84px;height:84px;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.12)}
+    .title{font-size:40px;line-height:1.1;margin:8px 0 6px}
+    .tag{color:var(--muted);font-size:16px;margin-bottom:18px}
+    .cta{display:flex;flex-wrap:wrap;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;font-weight:600}
+    .btn.primary{background:var(--brand);color:#fff}
+    .btn.secondary{background:#111827;color:#fff}
+    .btn.light{background:#fff;border:1px solid #e5e7eb}
+    .pill{display:inline-block;background:#fff3;border:1px solid #0001;padding:6px 10px;border-radius:999px;font-size:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;position:relative}
+    .card::after{content:"🐾";position:absolute;bottom:10px;right:10px;opacity:0.15;font-size:32px}
+    h2{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:8px}
+    h2::before{content:"🐾";font-size:20px;margin-right:6px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;word-break:break-all}
+    .copy{cursor:pointer;background:#111827;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:600}
+    .list{margin:8px 0 0;padding:0;list-style:none}
+    .list li{margin:8px 0;color:var(--muted);padding-left:1.6em;position:relative}
+    .list li::before{content:"🐾";position:absolute;left:0;top:0;margin-right:6px}
+    footer{margin:28px 0;color:var(--muted);text-align:center}
+    @media (max-width:900px){.hero-inner{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <header>
-    <img src="tosha_logo.png" alt="Tosha Logo" />
-    <h1>$TOSH - Tosha Token</h1>
-    <p class="tagline">A Token With Personality. Lazy. Cute. Friendly.</p>
-  </header>
+  <div class="container">
+    <header class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="brand">
+            <img src="/tosha_logo.png" alt="Tosha logo">
+            <div>
+              <div class="pill">$TOSH • Abstract</div>
+              <h1 class="title">Tosha Token</h1>
+            </div>
+          </div>
+          <p class="tag">A Token With Personality. <strong>Lazy.</strong> <strong>Cute.</strong> <strong>Friendly.</strong></p>
+          <div class="cta">
+            <a class="btn primary" href="https://t.me/tosha_x_x" target="_blank">Join Telegram</a>
+            <a class="btn light" href="https://x.com/tosha_x_x" target="_blank">Follow on X</a>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Tokenomics</h2>
+          <ul class="list">
+            <li>Total Supply: 1,000,000,000 $TOSH</li>
+            <li>0% Tax • 100% Cute</li>
+            <li>LP Locked • Contract Renounced</li>
+          </ul>
+        </div>
+      </div>
+    </header>
 
-  <section class="info">
-    <h2>Token Info</h2>
-    <p><strong>Contract Address:</strong><br />
-      0xb74a93a4495dd83420a390ceb9075d8d565b16cd</p>
-    <p><strong>Chart:</strong> <a href="https://dexscreener.com/abstract/0xb74a93a4495dd83420a390ceb9075d8d565b16cd" target="_blank">DexScreener</a></p>
-    <p><strong>Telegram:</strong> <a href="https://t.me/tosha_x_x" target="_blank">@tosha_x_x</a></p>
-    <p><strong>Twitter:</strong> <a href="https://x.com/tosha_x_x" target="_blank">@tosha_x_x</a></p>
-  </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Who is Tosha?</h2>
+        <p>Tosha is the sleepy orange cat who accidentally launched a token. He naps, we build. If you like <em>chill energy</em>, cute art, and honest vibes — welcome home. 🐾</p>
+      </div>
+      <div class="card">
+        <h2>Funny Roadmap</h2>
+        <ul class="list">
+          <li>Phase 1: Nap & Launch Token</li>
+          <li>Phase 2: Eat Snacks & Get Holders</li>
+          <li>Phase 3: World Domination (via Cuteness)</li>
+          <li>Phase 4: Sleep Again</li>
+        </ul>
+      </div>
+    </section>
 
-  <footer>
-    &copy; 2025 Tosha Token. All rights reserved.
-  </footer>
+    <section class="full">
+      <div class="card">
+        <h2>Meme Gallery</h2>
+        <p>Coming soon — the fluffiest memes on the blockchain. 😸</p>
+      </div>
+    </section>
+
+    <footer>
+      © 2025 Tosha Token — Too lazy to rug. Too fluffy to fail.
+    </footer>
+  </div>
+
+  <script>
+    function copyCA(){
+      const ca = document.getElementById('ca').innerText.trim();
+      navigator.clipboard.writeText(ca).then(()=>{
+        const btn = document.querySelector('.copy');
+        const old = btn.textContent; btn.textContent='Copied! ✅';
+        setTimeout(()=>btn.textContent=old, 1200);
+      })
+    }
+  </script>
 </body>
 </html>
