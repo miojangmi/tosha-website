@@ -158,11 +158,11 @@ window.addEventListener('load', () => {
   // a little snack to collect (kept from your old game)
   let snack = { x: 60, y: 60 };
 
-  sheet.onload = () => {
-    FW = sheet.width / COLS;       // frame width
-    FH = sheet.height;             // single row
-    loop(performance.now());
-  };
+ sheet.onload = () => {
+  FW = sheet.width / COLS;  // frame width = total width / columns
+  FH = sheet.height;        // one row
+  loop(performance.now());
+};
 
   function update(dt){
     const sp = 3;
@@ -254,6 +254,7 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
 
