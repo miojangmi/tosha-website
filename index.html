@@ -141,58 +141,104 @@ window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
   const ctx = c.getContext('2d');
 
-  // Load images
-  const catImg = new Image(); catImg.src = 'assets/cat.png';     // your cat
-  const fishImg = new Image(); fishImg.src = 'assets/fish.png';  // optional snack
-  let imagesReady = 0;
-  [catImg, fishImg].forEach(i => i.onload = () => imagesReady++);
+  // --- sprite config ---
+  const sheet = new Image();
+  sheet.src = 'cat_walk.png'; // 4 frames, each 32x32, 1 row
+  const FW = 32, FH = 32, COLS = 4;
+  const SCALE = 2;                 // draw 2x bigger on canvas
+  const DRAW_W = FW * SCALE, DRAW_H = FH * SCALE;
 
+  // animation timing
+  const FRAME_MS = 100;            // time per frame (walk speed)
+  let frame = 0, acc = 0;
+
+  // game state
   let x = 160, y = 160, score = 0;
-  let snack = { x: 60, y: 60 };
+  let dir = 1; // 1 = facing right, -1 = facing left
   const keys = {};
+  let snack = { x: 60, y: 60 };
 
-  function update() {
+  function update(dt) {
     const sp = 3;
-    if (keys.ArrowUp)    y = Math.max(16, y - sp);
-    if (keys.ArrowDown)  y = Math.min(c.height - 16, y + sp);
-    if (keys.ArrowLeft)  x = Math.max(16, x - sp);
-    if (keys.ArrowRight) x = Math.min(c.width  - 16, x + sp);
+    const moving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
 
-    if (Math.hypot(x - snack.x, y - snack.y) < 24) {
+    if (keys.ArrowUp)    y = Math.max(DRAW_H/2, y - sp);
+    if (keys.ArrowDown)  y = Math.min(c.height - DRAW_H/2, y + sp);
+    if (keys.ArrowLeft)  { x = Math.max(DRAW_W/2, x - sp); dir = -1; }
+    if (keys.ArrowRight) { x = Math.min(c.width - DRAW_W/2, x + sp); dir =  1; }
+
+    // advance animation only when moving
+    if (moving) {
+      acc += dt;
+      if (acc >= FRAME_MS) {
+        acc -= FRAME_MS;
+        frame = (frame + 1) % COLS; // 0..3
+      }
+    } else {
+      frame = 0; // idle looks like first frame; swap to a separate idle frame if you have one
+    }
+
+    // collision with snack
+    if (Math.hypot(x - snack.x, y - snack.y) < 22) {
       score++;
       snack.x = 20 + Math.random() * (c.width  - 40);
       snack.y = 20 + Math.random() * (c.height - 40);
     }
   }
 
-  function draw() {
-    ctx.clearRect(0,0,c.width,c.height);
-    // snack
-    if (imagesReady >= 2) {
-      ctx.drawImage(fishImg, snack.x - 12, snack.y - 12, 24, 24);
-    } else {
-      ctx.fillStyle = '#00c47d'; ctx.beginPath(); ctx.arc(snack.x, snack.y, 10, 0, Math.PI*2); ctx.fill();
-    }
-    // cat
-    if (imagesReady >= 1) {
-      ctx.drawImage(catImg, x - 24, y - 24, 48, 48);
-    } else {
-      ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
-    }
-    // score
-    ctx.fillStyle = '#222'; ctx.font = '14px Poppins,sans-serif';
-    ctx.fillText('Score: ' + score, 10, 20);
+  function drawCat() {
+    const sx = frame * FW;
+    const sy = 0;
+
+    ctx.save();
+    // translate to cat center
+    ctx.translate(x, y);
+    // flip horizontally if facing left
+    if (dir === -1) ctx.scale(-1, 1);
+    // draw so that the sprite is centered at (0,0)
+    ctx.drawImage(
+      sheet,
+      sx, sy, FW, FH,
+      -DRAW_W/2, -DRAW_H/2, DRAW_W, DRAW_H
+    );
+    ctx.restore();
   }
 
-  function loop(){ update(); draw(); requestAnimationFrame(loop); }
-  loop();
+  function drawSnack() {
+    ctx.fillStyle = '#00c47d';
+    ctx.beginPath();
+    ctx.arc(snack.x, snack.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
-  // controls
-  window.addEventListener('keydown', e => { if(e.key.startsWith('Arrow')) { keys[e.key] = true; e.preventDefault(); }});
-  window.addEventListener('keyup',   e => { keys[e.key] = false; });
+  let last = performance.now();
+  function loop(now = performance.now()) {
+    const dt = now - last; last = now;
+
+    update(dt);
+    ctx.clearRect(0, 0, c.width, c.height);
+    drawSnack();
+    if (sheet.complete) drawCat();
+
+    // score
+    ctx.fillStyle = '#222';
+    ctx.font = '14px Poppins, sans-serif';
+    ctx.fillText('Score: ' + score, 10, 20);
+
+    requestAnimationFrame(loop);
+  }
+
+  // controls (and prevent page scroll)
+  window.addEventListener('keydown', e => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+      keys[e.key] = true; e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+  loop();
 });
 </script>
-
 
     <section class="full">
       <div class="card">
@@ -218,4 +264,5 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
