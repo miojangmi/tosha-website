@@ -173,7 +173,7 @@ snackImg.src = 'snack.png'; // <-- adjust path
   snackImg.onload = () => { snackReady = true; };
 
   // snack
-  let snack = { x: 60, y: 80 };
+  let snack = { x: 60, y: 60 };
 
   function update(dt){
     const sp = 3;
@@ -218,7 +218,7 @@ snackImg.src = 'snack.png'; // <-- adjust path
   }
 
 function drawSnack(){
-  const size = 32;              // change size if you want
+  const size = 36;              // change size if you want
   if (snackImg.complete && snackImg.naturalWidth > 0) {
     ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
   } else {
@@ -276,6 +276,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
