@@ -133,9 +133,7 @@
   <button onclick="press('ArrowDown')">⬇️</button>
   <button onclick="press('ArrowRight')">➡️</button>
 </div>
-<script>
-function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
-</script>
+
 <script>
 window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
@@ -264,5 +262,6 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
