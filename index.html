@@ -157,7 +157,10 @@ window.addEventListener('load', () => {
 
   // a little snack to collect (kept from your old game)
   let snack = { x: 60, y: 60 };
-
+  
+const snackImg = new Image();
+snackImg.src = 'snack.png'; // your image path
+  
  sheet.onload = () => {
   FW = sheet.width / COLS;  // frame width = total width / columns
   FH = sheet.height;        // one row
@@ -203,7 +206,10 @@ window.addEventListener('load', () => {
     ctx.restore();
   }
 
-  function drawSnack(){
+function drawSnack(){
+  const size = 40; // how big the snack should be
+  ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
+}
     ctx.fillStyle = '#00c47d';
     ctx.beginPath(); ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2); ctx.fill();
   }
@@ -254,6 +260,7 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
 
