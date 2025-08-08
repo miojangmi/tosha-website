@@ -126,115 +126,107 @@
 <div class="card">
   <h2>Feed Tosha Mini-Game</h2>
  <!-- Canvas -->
-<canvas id="gameCanvas" width="320" height="320"></canvas>
+<canvas id="gameCanvas" width="320" height="320" tabindex="0" style="outline:none"></canvas>
+<p style="text-align:center;color:#667085">Use arrow keys to move Tosha 🐾</p>
 <div style="text-align:center; margin-top:8px;">
   <button onclick="press('ArrowUp')">⬆️</button>
   <button onclick="press('ArrowLeft')">⬅️</button>
   <button onclick="press('ArrowDown')">⬇️</button>
   <button onclick="press('ArrowRight')">➡️</button>
 </div>
-
+<script>
+function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
+</script>
 <script>
 window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
   const ctx = c.getContext('2d');
+  c.focus();
 
-  // --- sprite config ---
+  // load sprite sheet (4 cols, 1 row)
   const sheet = new Image();
-  sheet.src = 'cat_walk.png'; // 4 frames, each 32x32, 1 row
-  const FW = 32, FH = 32, COLS = 4;
-  const SCALE = 2;                 // draw 2x bigger on canvas
-  const DRAW_W = FW * SCALE, DRAW_H = FH * SCALE;
+  sheet.src = 'assets/cat_walk.png';
 
-  // animation timing
-  const FRAME_MS = 100;            // time per frame (walk speed)
-  let frame = 0, acc = 0;
-
-  // game state
-  let x = 160, y = 160, score = 0;
-  let dir = 1; // 1 = facing right, -1 = facing left
+  // state
+  let x = c.width/2, y = c.height/2, score = 0;
+  let dir = 1; // 1 right, -1 left
   const keys = {};
+  const FRAME_MS = 100; // animation speed
+  let frame = 0, acc = 0;
+  let FW = 0, FH = 0, COLS = 4; // set after onload
+
+  // a little snack to collect (kept from your old game)
   let snack = { x: 60, y: 60 };
 
-  function update(dt) {
+  sheet.onload = () => {
+    FW = sheet.width / COLS;       // frame width
+    FH = sheet.height;             // single row
+    loop(performance.now());
+  };
+
+  function update(dt){
     const sp = 3;
     const moving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
 
-    if (keys.ArrowUp)    y = Math.max(DRAW_H/2, y - sp);
-    if (keys.ArrowDown)  y = Math.min(c.height - DRAW_H/2, y + sp);
-    if (keys.ArrowLeft)  { x = Math.max(DRAW_W/2, x - sp); dir = -1; }
-    if (keys.ArrowRight) { x = Math.min(c.width - DRAW_W/2, x + sp); dir =  1; }
+    if (keys.ArrowUp)    y = Math.max(10, y - sp);
+    if (keys.ArrowDown)  y = Math.min(c.height - 10, y + sp);
+    if (keys.ArrowLeft)  { x = Math.max(10, x - sp); dir = -1; }
+    if (keys.ArrowRight) { x = Math.min(c.width - 10, x + sp); dir =  1; }
 
-    // advance animation only when moving
     if (moving) {
       acc += dt;
-      if (acc >= FRAME_MS) {
-        acc -= FRAME_MS;
-        frame = (frame + 1) % COLS; // 0..3
-      }
+      if (acc >= FRAME_MS) { acc -= FRAME_MS; frame = (frame + 1) % COLS; }
     } else {
-      frame = 0; // idle looks like first frame; swap to a separate idle frame if you have one
+      frame = 0; // idle = first frame
     }
 
-    // collision with snack
-    if (Math.hypot(x - snack.x, y - snack.y) < 22) {
+    // collect snack
+    if (Math.hypot(x - snack.x, y - snack.y) < 24) {
       score++;
       snack.x = 20 + Math.random() * (c.width  - 40);
       snack.y = 20 + Math.random() * (c.height - 40);
     }
   }
 
-  function drawCat() {
-    const sx = frame * FW;
-    const sy = 0;
+  function drawCat(){
+    // scale sprite to a nice size for the 320x320 canvas
+    const TARGET_H = 110;
+    const scale = TARGET_H / FH;
+    const TARGET_W = FW * scale;
+
+    const sx = frame * FW, sy = 0;
 
     ctx.save();
-    // translate to cat center
     ctx.translate(x, y);
-    // flip horizontally if facing left
     if (dir === -1) ctx.scale(-1, 1);
-    // draw so that the sprite is centered at (0,0)
-    ctx.drawImage(
-      sheet,
-      sx, sy, FW, FH,
-      -DRAW_W/2, -DRAW_H/2, DRAW_W, DRAW_H
-    );
+    ctx.drawImage(sheet, sx, sy, FW, FH, -TARGET_W/2, -TARGET_H/2, TARGET_W, TARGET_H);
     ctx.restore();
   }
 
-  function drawSnack() {
+  function drawSnack(){
     ctx.fillStyle = '#00c47d';
-    ctx.beginPath();
-    ctx.arc(snack.x, snack.y, 8, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2); ctx.fill();
   }
 
   let last = performance.now();
-  function loop(now = performance.now()) {
+  function loop(now){
     const dt = now - last; last = now;
-
     update(dt);
-    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.clearRect(0,0,c.width,c.height);
     drawSnack();
-    if (sheet.complete) drawCat();
-
-    // score
-    ctx.fillStyle = '#222';
-    ctx.font = '14px Poppins, sans-serif';
+    drawCat();
+    ctx.fillStyle = '#222'; ctx.font = '14px Poppins, sans-serif';
     ctx.fillText('Score: ' + score, 10, 20);
-
     requestAnimationFrame(loop);
   }
 
-  // controls (and prevent page scroll)
+  // controls (prevent page scroll)
   window.addEventListener('keydown', e => {
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
       keys[e.key] = true; e.preventDefault();
     }
   });
   window.addEventListener('keyup', e => { keys[e.key] = false; });
-
-  loop();
 });
 </script>
 
@@ -262,6 +254,7 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
 
