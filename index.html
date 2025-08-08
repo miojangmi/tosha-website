@@ -86,96 +86,57 @@
       </div>
     </section>
 
-<style>
-    :root{
-      --bg:#f7faf8;--card:#ffffff;--ink:#222;--muted:#6b7280;--brand:#00c47d;--brand2:#1d9bf0;--accent:#f59e0b;
-      --radius:18px;--shadow:0 10px 24px rgba(0,0,0,.08);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    header.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#aaf1c4,#7be3a0);border-radius:var(--radius);padding:48px 28px;box-shadow:var(--shadow)}
-    .hero-inner{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center}
-    .brand{display:flex;align-items:center;gap:16px}
-    .brand img{width:84px;height:84px;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.12)}
-    .title{font-size:40px;line-height:1.1;margin:8px 0 6px}
-    .tag{color:var(--muted);font-size:16px;margin-bottom:18px}
-    .cta{display:flex;flex-wrap:wrap;gap:12px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;font-weight:600}
-    .btn.primary{background:var(--brand);color:#fff}
-    .btn.secondary{background:#111827;color:#fff}
-    .btn.light{background:#fff;border:1px solid #e5e7eb}
-    .pill{display:inline-block;background:#fff3;border:1px solid #0001;padding:6px 10px;border-radius:999px;font-size:12px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;position:relative}
-    .card::after{content:"🐾";position:absolute;bottom:10px;right:10px;opacity:0.15;font-size:32px}
-    h2{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:8px}
-    h2::before{content:"🐾";font-size:20px;margin-right:6px}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;word-break:break-all}
-    .copy{cursor:pointer;background:#111827;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:600}
-    .list{margin:8px 0 0;padding:0;list-style:none}
-    .list li{margin:8px 0;color:var(--muted);padding-left:1.6em;position:relative}
-    .list li::before{content:"🐾";position:absolute;left:0;top:0;margin-right:6px}
-    footer{margin:28px 0;color:var(--muted);text-align:center}
-    @media (max-width:900px){.hero-inner{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
-    /* Mini-game styling */
-    #gameCanvas{background:#fff;border:2px solid var(--brand);border-radius:var(--radius);display:block;margin:20px auto;box-shadow:var(--shadow)}
-</style>
-
-<div class="card">
-  <h2>Feed Tosha Mini-Game</h2>
-  <canvas id="gameCanvas" width="300" height="300"></canvas>
-  <p style="text-align:center;color:var(--muted)">Catch the snacks for points! 🐾 Use arrow keys.</p>
-</div>
+<canvas id="gameCanvas" width="300" height="300" tabindex="0" style="outline:none"></canvas>
 
 <script>
-  window.addEventListener('load', () => {
-    const canvas = document.getElementById('gameCanvas');
-    if (!canvas.getContext) return;
-    const ctx = canvas.getContext('2d');
+window.addEventListener('load', () => {
+  const c = document.getElementById('gameCanvas');
+  const ctx = c.getContext('2d');
+  c.focus(); // autofocus
 
-    let x = 150, y = 150, score = 0;
-    let snack = {x:Math.random()*280,y:Math.random()*280};
+  let x = 150, y = 150, score = 0;
+  let snack = { x: 220, y: 160 };
+  const keys = {};
 
-    function drawCat(){
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.arc(x, y, 15, 0, Math.PI*2);
-      ctx.fill();
+  function update() {
+    const sp = 3;
+    if (keys.ArrowUp)    y = Math.max(15, y - sp);
+    if (keys.ArrowDown)  y = Math.min(c.height - 15, y + sp);
+    if (keys.ArrowLeft)  x = Math.max(15, x - sp);
+    if (keys.ArrowRight) x = Math.min(c.width - 15, x + sp);
+
+    // collide with snack
+    if (Math.hypot(x - snack.x, y - snack.y) < 23) {
+      score++;
+      snack.x = 20 + Math.random() * (c.width  - 40);
+      snack.y = 20 + Math.random() * (c.height - 40);
     }
+  }
 
-    function drawSnack(){
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--brand');
-      ctx.beginPath();
-      ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2);
-      ctx.fill();
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    // cat
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath(); ctx.arc(x, y, 15, 0, Math.PI * 2); ctx.fill();
+    // snack
+    ctx.fillStyle = '#00c47d';
+    ctx.beginPath(); ctx.arc(snack.x, snack.y, 8, 0, Math.PI * 2); ctx.fill();
+    // score
+    ctx.fillStyle = '#222'; ctx.font = '14px Poppins, sans-serif';
+    ctx.fillText('Score: ' + score, 10, 20);
+  }
+
+  function loop() { update(); draw(); requestAnimationFrame(loop); }
+  loop();
+
+  // keyboard (global) + prevent page scroll
+  window.addEventListener('keydown', e => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+      keys[e.key] = true; e.preventDefault();
     }
-
-    function gameLoop(){
-      ctx.clearRect(0,0,300,300);
-      drawCat();
-      drawSnack();
-      ctx.fillStyle = '#222';
-      ctx.font = '14px Poppins';
-      ctx.fillText('Score: ' + score, 10, 20);
-      requestAnimationFrame(gameLoop);
-    }
-
-    document.addEventListener('keydown',e=>{
-      if(e.key==='ArrowUp')y = Math.max(15, y-5);
-      if(e.key==='ArrowDown')y = Math.min(285, y+5);
-      if(e.key==='ArrowLeft')x = Math.max(15, x-5);
-      if(e.key==='ArrowRight')x = Math.min(285, x+5);
-      if(Math.hypot(x-snack.x,y-snack.y)<20){
-        score++;
-        snack.x=Math.random()*280;
-        snack.y=Math.random()*280;
-      }
-    });
-
-    gameLoop();
   });
+  window.addEventListener('keyup', e => { keys[e.key] = false; });
+});
 </script>
 
 
