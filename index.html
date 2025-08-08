@@ -86,6 +86,57 @@
       </div>
     </section>
 
+<div class="card">
+  <h2>Feed Tosha Mini-Game</h2>
+  <canvas id="gameCanvas" width="300" height="300"></canvas>
+  <p style="text-align:center;color:var(--muted)">Catch the snacks for points! 🐾</p>
+</div>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  let x = 150, y = 150, score = 0;
+  let snack = {x:Math.random()*280,y:Math.random()*280};
+
+  function drawCat(){
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function drawSnack(){
+    ctx.fillStyle = varColor('--brand');
+    ctx.beginPath();
+    ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function varColor(v){return getComputedStyle(document.documentElement).getPropertyValue(v)}
+
+  function gameLoop(){
+    ctx.clearRect(0,0,300,300);
+    drawCat();
+    drawSnack();
+    requestAnimationFrame(gameLoop);
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowUp')y-=5;
+    if(e.key==='ArrowDown')y+=5;
+    if(e.key==='ArrowLeft')x-=5;
+    if(e.key==='ArrowRight')x+=5;
+    if(Math.hypot(x-snack.x,y-snack.y)<20){
+      score++;
+      snack.x=Math.random()*280;
+      snack.y=Math.random()*280;
+    }
+  });
+
+  gameLoop();
+</script>
+
+
     <section class="full">
       <div class="card">
         <h2>Meme Gallery</h2>
