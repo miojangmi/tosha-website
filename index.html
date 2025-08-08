@@ -143,31 +143,29 @@ window.addEventListener('load', () => {
   const ctx = c.getContext('2d');
   c.focus();
 
-  // load sprite sheet (3 cols, 1 row)
+  // --- IMAGES ---
   const sheet = new Image();
-  sheet.src = 'cat_walk.png';
+  sheet.src = 'cat_walk.png';         // change to 'assets/cat_walk.png' if needed
 
-  // state
-  let x = c.width/2, y = c.height/2, score = 0;
-  let dir = 1; // 1 right, -1 left
+  const snackImg = new Image();
+  snackImg.src = 'penguin.png';       // <-- put your penguin file here (correct path!)
+
+  // --- STATE ---
+  let x = c.width / 2, y = c.height / 2, score = 0, dir = 1;
   const keys = {};
-  const FRAME_MS = 100; // animation speed
-  let frame = 0, acc = 0;
-  let FW = 0, FH = 0, COLS = 3; // set after onload
+  const FRAME_MS = 100;
+  const COLS = 3;                      // your sprite sheet has 3 usable frames
+  let frame = 0, acc = 0, FW = 0, FH = 0;
 
-  // a little snack to collect (kept from your old game)
   let snack = { x: 60, y: 60 };
-  
-const snackImg = new Image();
-snackImg.src = 'snack.png'; // your image path
-  
- sheet.onload = () => {
-  FW = sheet.width / COLS;  // frame width = total width / columns
-  FH = sheet.height;        // one row
-  loop(performance.now());
-};
 
-  function update(dt){
+  sheet.onload = () => {
+    FW = sheet.width / COLS;
+    FH = sheet.height;
+    requestAnimationFrame(loop);
+  };
+
+  function update(dt) {
     const sp = 3;
     const moving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
 
@@ -180,53 +178,55 @@ snackImg.src = 'snack.png'; // your image path
       acc += dt;
       if (acc >= FRAME_MS) { acc -= FRAME_MS; frame = (frame + 1) % COLS; }
     } else {
-      frame = 0; // idle = first frame
+      frame = 0;
     }
 
-    // collect snack
-    if (Math.hypot(x - snack.x, y - snack.y) < 24) {
+    // collision with snack (radius tuned to image size)
+    if (Math.hypot(x - snack.x, y - snack.y) < 28) {
       score++;
       snack.x = 20 + Math.random() * (c.width  - 40);
       snack.y = 20 + Math.random() * (c.height - 40);
     }
   }
 
-  function drawCat(){
-    // scale sprite to a nice size for the 320x320 canvas
+  function drawCat() {
     const TARGET_H = 110;
     const scale = TARGET_H / FH;
     const TARGET_W = FW * scale;
-
-    const sx = frame * FW, sy = 0;
+    const sx = frame * FW;
 
     ctx.save();
     ctx.translate(x, y);
     if (dir === -1) ctx.scale(-1, 1);
-    ctx.drawImage(sheet, sx, sy, FW, FH, -TARGET_W/2, -TARGET_H/2, TARGET_W, TARGET_H);
+    ctx.drawImage(sheet, sx, 0, FW, FH, -TARGET_W/2, -TARGET_H/2, TARGET_W, TARGET_H);
     ctx.restore();
   }
 
-function drawSnack(){
-  const size = 40; // how big the snack should be
-  ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
-}
-    ctx.fillStyle = '#00c47d';
-    ctx.beginPath(); ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2); ctx.fill();
+  function drawSnack() {
+    const size = 32; // size of penguin on canvas
+    if (snackImg.complete) {
+      ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
+    } else {
+      // fallback dot while image loads
+      ctx.fillStyle = '#00c47d';
+      ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
+    }
   }
 
   let last = performance.now();
-  function loop(now){
+  function loop(now) {
     const dt = now - last; last = now;
     update(dt);
-    ctx.clearRect(0,0,c.width,c.height);
+    ctx.clearRect(0, 0, c.width, c.height);
     drawSnack();
     drawCat();
-    ctx.fillStyle = '#222'; ctx.font = '14px Poppins, sans-serif';
+    ctx.fillStyle = '#222';
+    ctx.font = '14px Poppins, sans-serif';
     ctx.fillText('Score: ' + score, 10, 20);
     requestAnimationFrame(loop);
   }
 
-  // controls (prevent page scroll)
+  // controls
   window.addEventListener('keydown', e => {
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
       keys[e.key] = true; e.preventDefault();
@@ -235,7 +235,6 @@ function drawSnack(){
   window.addEventListener('keyup', e => { keys[e.key] = false; });
 });
 </script>
-
     <section class="full">
       <div class="card">
         <h2>Meme Gallery</h2>
@@ -260,6 +259,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
