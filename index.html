@@ -125,57 +125,72 @@
 
 <div class="card">
   <h2>Feed Tosha Mini-Game</h2>
-  <canvas id="gameCanvas" width="300" height="300"></canvas>
-  <p style="text-align:center;color:var(--muted)">Catch the snacks for points! 🐾 Use arrow keys.</p>
+ <!-- Canvas -->
+<canvas id="gameCanvas" width="320" height="320"></canvas>
+<div style="text-align:center; margin-top:8px;">
+  <button onclick="press('ArrowUp')">⬆️</button>
+  <button onclick="press('ArrowLeft')">⬅️</button>
+  <button onclick="press('ArrowDown')">⬇️</button>
+  <button onclick="press('ArrowRight')">➡️</button>
 </div>
-
 <script>
-  window.addEventListener('load', () => {
-    const canvas = document.getElementById('gameCanvas');
-    if (!canvas.getContext) return;
-    const ctx = canvas.getContext('2d');
+function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
+</script>
+<script>
+window.addEventListener('load', () => {
+  const c = document.getElementById('gameCanvas');
+  const ctx = c.getContext('2d');
 
-    let x = 150, y = 150, score = 0;
-    let snack = {x:Math.random()*280,y:Math.random()*280};
+  // Load images
+  const catImg = new Image(); catImg.src = 'assets/cat.png';     // your cat
+  const fishImg = new Image(); fishImg.src = 'assets/fish.png';  // optional snack
+  let imagesReady = 0;
+  [catImg, fishImg].forEach(i => i.onload = () => imagesReady++);
 
-    function drawCat(){
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.arc(x, y, 15, 0, Math.PI*2);
-      ctx.fill();
+  let x = 160, y = 160, score = 0;
+  let snack = { x: 60, y: 60 };
+  const keys = {};
+
+  function update() {
+    const sp = 3;
+    if (keys.ArrowUp)    y = Math.max(16, y - sp);
+    if (keys.ArrowDown)  y = Math.min(c.height - 16, y + sp);
+    if (keys.ArrowLeft)  x = Math.max(16, x - sp);
+    if (keys.ArrowRight) x = Math.min(c.width  - 16, x + sp);
+
+    if (Math.hypot(x - snack.x, y - snack.y) < 24) {
+      score++;
+      snack.x = 20 + Math.random() * (c.width  - 40);
+      snack.y = 20 + Math.random() * (c.height - 40);
     }
+  }
 
-    function drawSnack(){
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--brand');
-      ctx.beginPath();
-      ctx.arc(snack.x, snack.y, 8, 0, Math.PI*2);
-      ctx.fill();
+  function draw() {
+    ctx.clearRect(0,0,c.width,c.height);
+    // snack
+    if (imagesReady >= 2) {
+      ctx.drawImage(fishImg, snack.x - 12, snack.y - 12, 24, 24);
+    } else {
+      ctx.fillStyle = '#00c47d'; ctx.beginPath(); ctx.arc(snack.x, snack.y, 10, 0, Math.PI*2); ctx.fill();
     }
-
-    function gameLoop(){
-      ctx.clearRect(0,0,300,300);
-      drawCat();
-      drawSnack();
-      ctx.fillStyle = '#222';
-      ctx.font = '14px Poppins';
-      ctx.fillText('Score: ' + score, 10, 20);
-      requestAnimationFrame(gameLoop);
+    // cat
+    if (imagesReady >= 1) {
+      ctx.drawImage(catImg, x - 24, y - 24, 48, 48);
+    } else {
+      ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
     }
+    // score
+    ctx.fillStyle = '#222'; ctx.font = '14px Poppins,sans-serif';
+    ctx.fillText('Score: ' + score, 10, 20);
+  }
 
-    document.addEventListener('keydown',e=>{
-      if(e.key==='ArrowUp')y = Math.max(15, y-5);
-      if(e.key==='ArrowDown')y = Math.min(285, y+5);
-      if(e.key==='ArrowLeft')x = Math.max(15, x-5);
-      if(e.key==='ArrowRight')x = Math.min(285, x+5);
-      if(Math.hypot(x-snack.x,y-snack.y)<20){
-        score++;
-        snack.x=Math.random()*280;
-        snack.y=Math.random()*280;
-      }
-    });
+  function loop(){ update(); draw(); requestAnimationFrame(loop); }
+  loop();
 
-    gameLoop();
-  });
+  // controls
+  window.addEventListener('keydown', e => { if(e.key.startsWith('Arrow')) { keys[e.key] = true; e.preventDefault(); }});
+  window.addEventListener('keyup',   e => { keys[e.key] = false; });
+});
 </script>
 
 
@@ -203,3 +218,4 @@
   </script>
 </body>
 </html>
+
