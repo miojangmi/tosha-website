@@ -150,9 +150,10 @@ window.addEventListener('load', () => {
   sheet.src = 'cat_walk.png';           // e.g. 'assets/cat_walk.png'
   sheet.onerror = () => console.error('❌ cat_walk not found at:', sheet.src);
 
-  const snackImg = new Image();
-  snackImg.src = 'snack.png';         // e.g. 'assets/penguin.png'
-  snackImg.onerror = () => console.error('❌ penguin not found at:', snackImg.src);
+const snackImg = new Image();
+snackImg.onload  = () => console.log('✅ snack loaded', snackImg.naturalWidth, snackImg.naturalHeight);
+snackImg.onerror = () => console.error('❌ snack not found at', snackImg.src);
+snackImg.src = 'snack.png'; // <-- adjust path
 
   // ---- STATE ----
   let x = c.width/2, y = c.height/2, score = 0, dir = 1;
@@ -216,16 +217,16 @@ window.addEventListener('load', () => {
     }
   }
 
-  function drawSnack(){
-    const size = 32;
-    if (snackReady) {
-      ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
-    } else {
-      // fallback dot while loading
-      ctx.fillStyle = '#00c47d';
-      ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
-    }
+function drawSnack(){
+  const size = 32;              // change size if you want
+  if (snackImg.complete && snackImg.naturalWidth > 0) {
+    ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
+  } else {
+    // temporary fallback while it loads; remove once working
+    ctx.fillStyle = '#00c47d';
+    ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
   }
+}
 
   let last = performance.now();
   function loop(now = performance.now()){
@@ -275,6 +276,7 @@ window.addEventListener('load', () => {
   </script>
 </body>
 </html>
+
 
 
 
