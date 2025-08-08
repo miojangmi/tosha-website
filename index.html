@@ -200,9 +200,8 @@ snackImg.src = 'snack.png'; // <-- adjust path
 
   function drawCat(){
     if (spriteReady) {
-      const TARGET_H = 110;
-      const scale = TARGET_H / FH;
-      const TARGET_W = FW * scale;
+const TARGET_H = 110;  // height stays same
+const TARGET_W = 140;  // make cat wider manually
       const sx = frame * FW;
 
       ctx.save();
@@ -276,6 +275,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
