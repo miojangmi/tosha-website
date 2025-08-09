@@ -79,8 +79,8 @@
     </p>
   </div>
 
-  <div class="card">
-    <h2>Roadmap</h2>
+  <div class="card roadmap-card">
+    <h2>Roadmap 🐾</h2>
     <ul class="list">
       <li><strong>Phase 1 — Nap & Launch Token:</strong> Roll out of bed, deploy $TOSH, gather the first diamond-pawed believers.</li>
       <li><strong>Phase 2 — Eat Snacks & Get Holders:</strong> Eat snacks, stack holders, meme so hard the internet notices.</li>
@@ -91,40 +91,37 @@
 </section>
 
 <style>
-    :root{
-      --bg:#f7faf8;--card:#ffffff;--ink:#222;--muted:#6b7280;--brand:#00c47d;--brand2:#1d9bf0;--accent:#f59e0b;
-      --radius:18px;--shadow:0 10px 24px rgba(0,0,0,.08);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    header.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#aaf1c4,#7be3a0);border-radius:var(--radius);padding:48px 28px;box-shadow:var(--shadow)}
-    .hero-inner{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center}
-    .brand{display:flex;align-items:center;gap:16px}
-    .brand img{width:84px;height:84px;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.12)}
-    .title{font-size:40px;line-height:1.1;margin:8px 0 6px}
-    .tag{color:var(--muted);font-size:16px;margin-bottom:18px}
-    .cta{display:flex;flex-wrap:wrap;gap:12px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;font-weight:600}
-    .btn.primary{background:var(--brand);color:#fff}
-    .btn.secondary{background:#111827;color:#fff}
-    .btn.light{background:#fff;border:1px solid #e5e7eb}
-    .pill{display:inline-block;background:#fff3;border:1px solid #0001;padding:6px 10px;border-radius:999px;font-size:12px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;position:relative}
-    .card::after{content:"🐾";position:absolute;bottom:10px;right:10px;opacity:0.15;font-size:32px}
-    h2{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:8px}
-    h2::before{content:"🐾";font-size:20px;margin-right:6px}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;word-break:break-all}
-    .copy{cursor:pointer;background:#111827;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:600}
-    .list{margin:8px 0 0;padding:0;list-style:none}
-    .list li{margin:8px 0;color:var(--muted);padding-left:1.6em;position:relative}
-    .list li::before{content:"🐾";position:absolute;left:0;top:0;margin-right:6px}
-    footer{margin:28px 0;color:var(--muted);text-align:center}
-    @media (max-width:900px){.hero-inner{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
-    /* Mini-game styling */
-    #gameCanvas{background:#fff;border:2px solid var(--brand);border-radius:var(--radius);display:block;margin:20px auto;box-shadow:var(--shadow)}
+  /* Roadmap Card Styling */
+  .roadmap-card {
+    background-color: #e6f7e6; /* light green */
+    border: 2px solid #b2e0b2; /* slightly darker green border */
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+  }
+
+  /* Pawprint Decoration */
+  .roadmap-card::before {
+    content: "🐾";
+    font-size: 2rem;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+  }
+
+  .roadmap-card h2 {
+    color: #2b7a2b; /* deep green */
+    font-weight: 800;
+  }
+
+  .roadmap-card ul li {
+    margin-bottom: 12px;
+    line-height: 1.4em;
+  }
+
+  .roadmap-card strong {
+    color: #1f5e1f;
+  }
 </style>
 
 <div class="card">
@@ -280,6 +277,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
