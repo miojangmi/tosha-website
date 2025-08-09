@@ -279,35 +279,41 @@
     return n;
   }
 
-  // ✅ Make saveScore return a Promise
-  window.saveScore = async function(score){
-    return new Promise(async (resolve, reject) => {
-      try {
-        const user = auth.currentUser;
-        if (!user) { alert("Signing you in… try again in a second."); return reject(); }
+// Strict: requires a stored name or a prompt-confirmed name
+window.saveScore = async function(score){
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return reject("Not signed in");
 
-        const name = getPlayerName();
-        if (!name) return reject();
-
-        const uid = user.uid;
-        const ref = doc(scoresCol, uid);
-        const snap = await getDoc(ref);
-        const newScore = Math.max(0, Math.floor(score));
-        const prev = snap.exists() ? (snap.data().score || 0) : -1;
-
-        if (!snap.exists() || newScore > prev) {
-          await setDoc(ref, { name, score: newScore, updatedAt: serverTimestamp() }, { merge: false });
-        } else {
-          // allow name refresh without lowering score
-          await setDoc(ref, { name, score: prev, updatedAt: serverTimestamp() }, { merge: true });
-        }
-        resolve();
-      } catch (e) {
-        console.error(e);
-        reject(e);
+      // must have a name
+      let name = (localStorage.getItem("tosha_player_name") || "").trim().slice(0,16).replace(/\//g,'');
+      if (!name) {
+        name = prompt("Enter a name for the leaderboard (max 16 chars):", "") || "";
+        name = name.trim().slice(0,16).replace(/\//g,'');
+        if (!name) return reject("No name provided");
+        localStorage.setItem("tosha_player_name", name);
       }
-    });
-  };
+
+      const uid = user.uid;
+      const ref = doc(scoresCol, uid);
+      const snap = await getDoc(ref);
+      const newScore = Math.max(0, Math.floor(score));
+      const prev = snap.exists() ? (snap.data().score || 0) : -1;
+
+      if (!snap.exists() || newScore > prev) {
+        await setDoc(ref, { name, score: newScore, updatedAt: serverTimestamp() }, { merge: false });
+      } else {
+        // allow name refresh without lowering score
+        await setDoc(ref, { name, score: prev, updatedAt: serverTimestamp() }, { merge: true });
+      }
+      resolve();
+    } catch (e) {
+      console.error(e);
+      reject(e);
+    }
+  });
+};
 
   // 🔧 Hide manual Save button (since we auto-save)
   const saveBtn = document.getElementById("saveScoreBtn");
@@ -398,14 +404,24 @@ function endGame(){
   window.__gameOver = true;
   updateTimerUI();
 
-  // Auto-save when time is up, then highlight on the leaderboard
-  if (window.currentScore != null && typeof window.saveScore === 'function') {
+ // Auto-save only if a name exists; otherwise prompt once (no default)
+if (window.currentScore != null && typeof window.saveScore === 'function') {
+  const stored = (localStorage.getItem('tosha_player_name') || '').trim();
+  if (stored) {
     window.saveScore(window.currentScore).then(() => {
-      if (typeof window.highlightPlayer === 'function') {
-        window.highlightPlayer();
-      }
-    }).catch(()=>{ /* ignore */ });
+      if (typeof window.highlightPlayer === 'function') window.highlightPlayer();
+    }).catch(()=>{});
+  } else {
+    const name = prompt("Enter a name to save your score (max 16 chars):", "");
+    if (name && name.trim()) {
+      localStorage.setItem('tosha_player_name', name.trim().slice(0,16).replace(/\//g,''));
+      window.saveScore(window.currentScore).then(() => {
+        if (typeof window.highlightPlayer === 'function') window.highlightPlayer();
+      }).catch(()=>{});
+    }
+    // if canceled or empty -> skip saving silently
   }
+}
 
   alert(`Time! Final score: ${score}`);
 }
@@ -562,6 +578,7 @@ function endGame(){
   </script>
 </body>
 </html>
+
 
 
 
