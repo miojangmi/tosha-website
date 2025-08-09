@@ -274,26 +274,44 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Save score function
-  window.saveScore = async function(score){
-    let name = localStorage.getItem("tosha_player_name") || "";
-    if (!name) {
-      name = prompt("Enter a name for the leaderboard (max 16 chars):", "ToshaFan");
-      if (!name) return; 
-      name = name.trim().slice(0,16);
-      localStorage.setItem("tosha_player_name", name);
-    }
-    try {
-      await addDoc(scoresCol, {
-        name,
-        score: Math.max(0, Math.floor(score)),
-        createdAt: serverTimestamp()
-      });
-      alert("Score saved! 😺");
-    } catch(e){
-      console.error(e);
-      alert("Couldn’t save score. Try again later.");
-    }
-  };
+  import { doc, setDoc, getDoc, serverTimestamp } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+function normalizeName(raw) {
+  let n = (raw || "").trim().slice(0,16);
+  // Firestore doc IDs cannot contain '/'
+  n = n.replace(/\//g, ''); 
+  return n || "AnonCat";
+}
+
+window.saveScore = async function(score){
+  // get or ask name once, store locally
+  let name = localStorage.getItem("tosha_player_name");
+  if (!name) {
+    name = prompt("Enter a name for the leaderboard (max 16 chars):", "ToshaFan");
+    if (!name) return;
+    name = normalizeName(name);
+    localStorage.setItem("tosha_player_name", name);
+  } else {
+    name = normalizeName(name);
+  }
+
+  const newScore = Math.max(0, Math.floor(score));
+  const ref = doc(scoresCol, name);         // doc id == name
+  const snap = await getDoc(ref);
+
+  // Only write if it's a new doc or a higher score
+  if (!snap.exists() || newScore > (snap.data().score || 0)) {
+    await setDoc(ref, {
+      name,                    // must match doc id per rules
+      score: newScore,
+      updatedAt: serverTimestamp()   // required by rules
+    }, { merge: false });
+    alert("Score saved! 😺");
+  } else {
+    alert("You already have an equal or higher score.");
+  }
+};
 
   // Hook up button
   document.getElementById("saveScoreBtn")?.addEventListener("click", ()=>{
@@ -446,6 +464,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
