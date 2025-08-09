@@ -70,8 +70,8 @@
       </div>
     </header>
 
-<section class="card roadmap-card">
-  <div class="card">
+<section class="grid">
+  <div class="card paw-card white">
     <h2>Who is Tosha?</h2>
     <p>
       Tosha is the sleepy orange cat who accidentally launched a token.  
@@ -79,7 +79,7 @@
     </p>
   </div>
 
-  <div class="card roadmap-card">
+  <div class="card paw-card green">
     <h2>Roadmap 🐾</h2>
     <ul class="list">
       <li><strong>Phase 1 — Nap & Launch Token:</strong> Roll out of bed, deploy $TOSH, gather the first diamond-pawed believers.</li>
@@ -90,47 +90,41 @@
   </div>
 </section>
 
-<style>
-  /* Frame for the whole roadmap section */
-  .roadmap-frame {
-    border: 3px solid #b2e0b2; /* same green as roadmap border */
-    border-radius: 25px;
-    padding: 20px;
-    background-color: #f9fff9; /* subtle background so border stands out */
-  }
+ /* Shared Paw Card Styling */
+.paw-card {
+  border: 2px solid #b2e0b2; /* green border */
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+}
 
-  /* Roadmap Card Styling */
-  .roadmap-card {
-    background-color: #e6f7e6; /* light green */
-    border: 2px solid #b2e0b2; /* slightly darker green border */
-    border-radius: 20px;
-    padding: 20px;
-    position: relative;
-  }
+/* Pawprint Decoration */
+.paw-card::before {
+  content: "🐾";
+  font-size: 2rem;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+}
 
-  /* Pawprint Decoration */
-  .roadmap-card::before {
-    content: "🐾";
-    font-size: 2rem;
-    position: absolute;
-    top: 15px;
-    right: 20px;
-  }
+/* Background colors */
+.paw-card.white {
+  background-color: #ffffff;
+}
 
-  .roadmap-card h2 {
-    color: #2b7a2b; /* deep green */
-    font-weight: 800;
-  }
+.paw-card.green {
+  background-color: #e6f7e6; /* light green */
+}
 
-  .roadmap-card ul li {
-    margin-bottom: 12px;
-    line-height: 1.4em;
-  }
+/* Headings */
+.paw-card.green h2 {
+  color: #2b7a2b;
+  font-weight: 800;
+}
 
-  .roadmap-card strong {
-    color: #1f5e1f;
-  }
-</style>
+.paw-card.green strong {
+  color: #1f5e1f;
+}
 
 <div class="card">
   <h2>Feed Tosha Mini-Game</h2>
@@ -285,6 +279,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
