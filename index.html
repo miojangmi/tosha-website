@@ -215,12 +215,13 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { initializeAppCheck, ReCaptchaV3Provider } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
+  import {
+    getFirestore, collection, doc, getDoc, setDoc, serverTimestamp,
+    query, orderBy, limit, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 🔧 Replace with your own config from Firebase console
   const firebaseConfig = {
     apiKey: "AIzaSyAbiPviAVeEA9EHPczK0pUIpSDOWaVUOVQ",
     authDomain: "tosha-e8f91.firebaseapp.com",
@@ -230,90 +231,92 @@
     appId: "1:151122614360:web:ac3fa952e2d4fde01b522d"
   };
 
-  // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
 
-// ✅ App Check first
-initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LeBOqArAAAAAOj5LSuGNQ7a1wAQdNlX67Y2uYa4'),
-  isTokenAutoRefreshEnabled: true
-});
-
-// Firestore setup (after App Check init)
-const db = getFirestore(app);
-const scoresCol = collection(db, "tosha_scores");
-
-// Wait for DOM ready before starting queries
-document.addEventListener("DOMContentLoaded", () => {
-  const lbList = document.getElementById("leaderboard");
-  const topQ = query(scoresCol, orderBy("score", "desc"), limit(10));
-  onSnapshot(topQ, (snap) => {
-    lbList.innerHTML = "";
-    let rank = 1;
-    snap.forEach(doc => {
-      const { name, score } = doc.data();
-      const li = document.createElement("li");
-      li.textContent = `#${rank++} ${name || "Anon Cat"} — ${score}`;
-      lbList.appendChild(li);
-    });
+  // App Check (reCAPTCHA v3)
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('6LeBOqArAAAAAOj5LSuGNQ7a1wAQdNlX67Y2uYa4'),
+    isTokenAutoRefreshEnabled: true
   });
-});
 
-  // --- Leaderboard: live top 10 ---
+  // Auth: sign in anonymously
+  const auth = getAuth(app);
+  signInAnonymously(auth).catch(console.error);
+
+  // Firestore
+  const db = getFirestore(app);
+  const scoresCol = collection(db, "tosha_scores");
+
+  // Live leaderboard (top 10)
   const lbList = document.getElementById("leaderboard");
   const topQ = query(scoresCol, orderBy("score", "desc"), limit(10));
   onSnapshot(topQ, (snap) => {
     lbList.innerHTML = "";
     let rank = 1;
-    snap.forEach(doc => {
-      const { name, score } = doc.data();
+    snap.forEach(docSnap => {
+      const { name, score } = docSnap.data();
       const li = document.createElement("li");
       li.textContent = `#${rank++} ${name || "Anon Cat"} — ${score}`;
       lbList.appendChild(li);
     });
   });
 
-  // Save score function
-  import { doc, setDoc, getDoc, serverTimestamp } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  // Helper: get or ask display name (stored locally)
+  function getPlayerName() {
+    let n = (localStorage.getItem("tosha_player_name") || "").trim();
+    if (!n) {
+      n = prompt("Enter a name for the leaderboard (max 16 chars):", "ToshaFan") || "";
+      n = n.trim().slice(0,16).replace(/\//g,'');
+      if (!n) return null;
+      localStorage.setItem("tosha_player_name", n);
+    } else {
+      n = n.slice(0,16).replace(/\//g,'');
+    }
+    return n;
+  }
 
-function normalizeName(raw) {
-  let n = (raw || "").trim().slice(0,16);
-  // Firestore doc IDs cannot contain '/'
-  n = n.replace(/\//g, ''); 
-  return n || "AnonCat";
-}
+  // Save score: one doc per uid; only update if higher
+  window.saveScore = async function(score){
+    const user = auth.currentUser;
+    if (!user) { alert("Signing you in… try again in a second."); return; }
 
-window.saveScore = async function(score){
-  // get or ask name once, store locally
-  let name = localStorage.getItem("tosha_player_name");
-  if (!name) {
-    name = prompt("Enter a name for the leaderboard (max 16 chars):", "ToshaFan");
+    const name = getPlayerName();
     if (!name) return;
-    name = normalizeName(name);
-    localStorage.setItem("tosha_player_name", name);
-  } else {
-    name = normalizeName(name);
-  }
 
-  const newScore = Math.max(0, Math.floor(score));
-  const ref = doc(scoresCol, name);         // doc id == name
-  const snap = await getDoc(ref);
+    const uid = user.uid;
+    const ref = doc(scoresCol, uid);
+    const snap = await getDoc(ref);
+    const newScore = Math.max(0, Math.floor(score));
 
-  // Only write if it's a new doc or a higher score
-  if (!snap.exists() || newScore > (snap.data().score || 0)) {
-    await setDoc(ref, {
-      name,                    // must match doc id per rules
-      score: newScore,
-      updatedAt: serverTimestamp()   // required by rules
-    }, { merge: false });
-    alert("Score saved! 😺");
-  } else {
-    alert("You already have an equal or higher score.");
-  }
-};
+    const prev = snap.exists() ? (snap.data().score || 0) : -1;
+    if (!snap.exists() || newScore > prev) {
+      await setDoc(ref, {
+        name,
+        score: newScore,
+        updatedAt: serverTimestamp()
+      }, { merge: false });
+      alert("Score saved! 😺 (new record)");
+    } else {
+      // allow name refresh without lowering score
+      await setDoc(ref, {
+        name,
+        score: prev,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      alert("Name updated. Your best score stays " + prev + ".");
+    }
+  };
 
-  // Hook up button
+  // (Optional) enable/disable the Save button until signed in
+  const saveBtn = document.getElementById("saveScoreBtn");
+  if (saveBtn) saveBtn.disabled = true;
+  onAuthStateChanged(auth, (u) => {
+    if (saveBtn) saveBtn.disabled = !u;
+  });
+
+  // Keep this from your game code:
+  // window.currentScore should be updated whenever score changes
   document.getElementById("saveScoreBtn")?.addEventListener("click", ()=>{
     if (window.currentScore == null) return alert("Play first, then save!");
     window.saveScore(window.currentScore);
@@ -464,6 +467,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
