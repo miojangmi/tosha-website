@@ -126,36 +126,39 @@
 .roadmap-card strong {
   color: #1f5e1f;
 }
-</style>
-<style>
-/* Separate the game from sections above + center it */
+
+  /* ⬇️ ADD THESE LINES AT THE END */
 .game{
-  margin: 56px auto 24px;      /* space above & below */
+  margin: 56px auto 24px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  max-width: 760px;             /* keeps it neat on wide screens */
+  max-width: 760px;
 }
 
-/* Optional: match the green frame look */
 .game-card{
   border: 2px solid #b2e0b2;
   border-radius: 20px;
   padding: 20px;
   text-align: center;
-  background: #fff;             /* or #e6f7e6 if you want it green */
+  background: #fff;
 }
 
-/* Center the canvas inside the card */
 #gameCanvas{
   display: block;
   margin: 8px auto 0;
 }
 
-/* Small helpers */
-.game-card .hint{ color:#667085; margin:8px 0 0; }
-.game-card .pad{ margin-top:10px; }
+.game-card .hint{
+  color:#667085;
+  margin:8px 0 0;
+}
+
+.game-card .pad{
+  margin-top:10px;
+}
 </style>
+
 <section class="game">
   <div class="card game-card">
     <h2>Feed Tosha Mini-Game</h2>
@@ -312,6 +315,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
