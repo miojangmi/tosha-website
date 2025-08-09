@@ -193,7 +193,7 @@
   display:grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows:    1fr 1fr;
-  gap:10px;
+  gap:6px;
   user-select:none;
 }
 .dpad .spacer{ pointer-events:none }
@@ -257,7 +257,6 @@
   <div class="spacer"></div>
   <button class="key down"  data-key="ArrowDown"  aria-label="Down">▼</button>
 </div>
-<p class="mobile-hint">Tip: tap & hold the arrows on mobile</p>
 
     <div style="margin-top:14px;">
       <button id="saveScoreBtn" class="btn light">Save Score to Leaderboard</button>
@@ -683,6 +682,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
