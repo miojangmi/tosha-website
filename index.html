@@ -238,24 +238,20 @@
     appId: "1:151122614360:web:ac3fa952e2d4fde01b522d"
   };
 
-  // Init Firebase
   const app = initializeApp(firebaseConfig);
 
-  // App Check (reCAPTCHA v3)
   initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider('6LeBOqArAAAAAOj5LSuGNQ7a1wAQdNlX67Y2uYa4'),
     isTokenAutoRefreshEnabled: true
   });
 
-  // Auth: sign in anonymously
   const auth = getAuth(app);
   signInAnonymously(auth).catch(console.error);
 
-  // Firestore
   const db = getFirestore(app);
   const scoresCol = collection(db, "tosha_scores");
 
-  // Live leaderboard (top 10)
+  // LIVE leaderboard
   const lbList = document.getElementById("leaderboard");
   const topQ = query(scoresCol, orderBy("score", "desc"), limit(10));
   onSnapshot(topQ, (snap) => {
@@ -269,7 +265,7 @@
     });
   });
 
-  // Helper: get or ask display name (stored locally)
+  // Get/remember display name
   function getPlayerName() {
     let n = (localStorage.getItem("tosha_player_name") || "").trim();
     if (!n) {
@@ -283,51 +279,64 @@
     return n;
   }
 
-  // Save score: one doc per uid; only update if higher
+  // ✅ Make saveScore return a Promise
   window.saveScore = async function(score){
-    const user = auth.currentUser;
-    if (!user) { alert("Signing you in… try again in a second."); return; }
+    return new Promise(async (resolve, reject) => {
+      try {
+        const user = auth.currentUser;
+        if (!user) { alert("Signing you in… try again in a second."); return reject(); }
 
-    const name = getPlayerName();
-    if (!name) return;
+        const name = getPlayerName();
+        if (!name) return reject();
 
-    const uid = user.uid;
-    const ref = doc(scoresCol, uid);
-    const snap = await getDoc(ref);
-    const newScore = Math.max(0, Math.floor(score));
+        const uid = user.uid;
+        const ref = doc(scoresCol, uid);
+        const snap = await getDoc(ref);
+        const newScore = Math.max(0, Math.floor(score));
+        const prev = snap.exists() ? (snap.data().score || 0) : -1;
 
-    const prev = snap.exists() ? (snap.data().score || 0) : -1;
-    if (!snap.exists() || newScore > prev) {
-      await setDoc(ref, {
-        name,
-        score: newScore,
-        updatedAt: serverTimestamp()
-      }, { merge: false });
-      alert("Score saved! 😺 (new record)");
-    } else {
-      // allow name refresh without lowering score
-      await setDoc(ref, {
-        name,
-        score: prev,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      alert("Name updated. Your best score stays " + prev + ".");
-    }
+        if (!snap.exists() || newScore > prev) {
+          await setDoc(ref, { name, score: newScore, updatedAt: serverTimestamp() }, { merge: false });
+        } else {
+          // allow name refresh without lowering score
+          await setDoc(ref, { name, score: prev, updatedAt: serverTimestamp() }, { merge: true });
+        }
+        resolve();
+      } catch (e) {
+        console.error(e);
+        reject(e);
+      }
+    });
   };
 
-  // (Optional) enable/disable the Save button until signed in
-  if (saveBtn) saveBtn.style.display = "none"; // hide manual save button
-  if (saveBtn) saveBtn.disabled = true;
-  onAuthStateChanged(auth, (u) => {
-    if (saveBtn) saveBtn.disabled = !u;
-  });
+  // 🔧 Hide manual Save button (since we auto-save)
+  const saveBtn = document.getElementById("saveScoreBtn");
+  if (saveBtn) {
+    saveBtn.style.display = "none";
+    saveBtn.disabled = true;
+    onAuthStateChanged(auth, (u) => { saveBtn.disabled = !u; });
+  }
 
-  // Keep this from your game code:
-  // window.currentScore should be updated whenever score changes
+  // Keep manual hook (won't show anyway)
   document.getElementById("saveScoreBtn")?.addEventListener("click", ()=>{
     if (window.currentScore == null) return alert("Play first, then save!");
     window.saveScore(window.currentScore);
   });
+
+  // Helper for highlighting after save
+  window.highlightPlayer = function () {
+    const playerName = localStorage.getItem("tosha_player_name") || "";
+    if (!playerName || !lbList) return;
+    const items = lbList.querySelectorAll("li");
+    items.forEach(li => {
+      if (li.textContent.includes(playerName)) {
+        li.style.background = "#fff9c4";
+        li.style.transition = "background 0.5s ease";
+        setTimeout(() => li.style.background = "", 2000);
+        li.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  };
 </script>
     
 <script>
@@ -384,16 +393,22 @@ window.addEventListener('load', () => {
     if (restartBtn) restartBtn.style.display = 'inline-block';
   }
 
-  function endGame(){
-    gameOver = true;
-    window.__gameOver = true;
-    updateTimerUI();
-  // Auto-save when time is up
-if (window.currentScore != null && typeof window.saveScore === 'function') {
-  window.saveScore(window.currentScore);
-}
-    alert(`Time! Final score: ${score}`);
+function endGame(){
+  gameOver = true;
+  window.__gameOver = true;
+  updateTimerUI();
+
+  // Auto-save when time is up, then highlight on the leaderboard
+  if (window.currentScore != null && typeof window.saveScore === 'function') {
+    window.saveScore(window.currentScore).then(() => {
+      if (typeof window.highlightPlayer === 'function') {
+        window.highlightPlayer();
+      }
+    }).catch(()=>{ /* ignore */ });
   }
+
+  alert(`Time! Final score: ${score}`);
+}
 
   // Buttons
   startBtn?.addEventListener('click', startGame);
@@ -547,6 +562,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
