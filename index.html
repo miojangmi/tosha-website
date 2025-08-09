@@ -231,7 +231,18 @@
   .dpad{ width:240px; gap:12px; }
   .dpad .key{ height:72px; min-width:72px; font-size:26px; }
 }
+/* Tighten spacing for arrow buttons */
+.pad button {
+  margin: 2px; /* less gap between buttons */
+}
 
+.pad {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 150px; /* keeps them closer */
+  margin: 0 auto;
+}
 </style>
 
 <section class="game two-col">
@@ -682,6 +693,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
