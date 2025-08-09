@@ -127,18 +127,49 @@
   color: #1f5e1f;
 }
 </style>
+<style>
+/* Separate the game from sections above + center it */
+.game{
+  margin: 56px auto 24px;      /* space above & below */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 760px;             /* keeps it neat on wide screens */
+}
 
-<div class="card">
-  <h2>Feed Tosha Mini-Game</h2>
- <!-- Canvas -->
-<canvas id="gameCanvas" width="320" height="320" tabindex="0" style="outline:none"></canvas>
-<p style="text-align:center;color:#667085">Use arrow keys to move Tosha 🐾</p>
-<div style="text-align:center; margin-top:8px;">
-  <button onclick="press('ArrowUp')">⬆️</button>
-  <button onclick="press('ArrowLeft')">⬅️</button>
-  <button onclick="press('ArrowDown')">⬇️</button>
-  <button onclick="press('ArrowRight')">➡️</button>
-</div>
+/* Optional: match the green frame look */
+.game-card{
+  border: 2px solid #b2e0b2;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  background: #fff;             /* or #e6f7e6 if you want it green */
+}
+
+/* Center the canvas inside the card */
+#gameCanvas{
+  display: block;
+  margin: 8px auto 0;
+}
+
+/* Small helpers */
+.game-card .hint{ color:#667085; margin:8px 0 0; }
+.game-card .pad{ margin-top:10px; }
+</style>
+<section class="game">
+  <div class="card game-card">
+    <h2>Feed Tosha Mini-Game</h2>
+
+    <canvas id="gameCanvas" width="320" height="320" tabindex="0" style="outline:none"></canvas>
+    <p class="hint">Use arrow keys to move Tosha 🐾</p>
+    <div class="pad">
+      <button onclick="press('ArrowUp')">⬆️</button>
+      <button onclick="press('ArrowLeft')">⬅️</button>
+      <button onclick="press('ArrowDown')">⬇️</button>
+      <button onclick="press('ArrowRight')">➡️</button>
+    </div>
+  </div>
+</section>
   
 <script>
 function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
@@ -281,6 +312,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
