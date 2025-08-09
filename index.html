@@ -187,61 +187,17 @@
 .lb li{ margin:6px 0; }
   /* Pretty D-pad */
 .dpad{
-  margin-top:12px;
-  width:220px;
-  margin-left:auto; margin-right:auto;
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows:    1fr 1fr;
-  gap:4px;
-  user-select:none;
-}
-.dpad .spacer{ pointer-events:none }
+  margin-top: 8px;
+  margin-left: auto; 
+  margin-right: auto;
+  display: grid;
 
-.dpad .key{
-  height:64px; min-width:64px;
-  border:0;
-  border-radius:18px;
-  font-size:24px; font-weight:800;
-  background: radial-gradient(120% 160% at 30% 20%, #ffffff 0%, #e8f8ef 60%, #c9eedc 100%);
-  box-shadow:
-    0 6px 16px rgba(0,0,0,.12),
-    inset 0 1px 0 rgba(255,255,255,.7);
-  color:#216b44;
-  cursor:pointer;
-  transition: transform .06s ease, box-shadow .12s ease;
-  touch-action: none;        /* prevents scroll while dragging */
-}
-.dpad .key:active{
-  transform: translateY(1px) scale(0.98);
-  box-shadow:
-    0 3px 8px rgba(0,0,0,.12),
-    inset 0 2px 8px rgba(0,0,0,.18);
-}
+  /* 👇 Narrow middle column so buttons sit close */
+  grid-template-columns: auto 8px auto;  /* center column only 8px */
+  grid-template-rows: auto auto;         /* buttons define height */
 
-.mobile-hint{
-  margin-top:8px;
-  color:#667085;
-  text-align:center;
-  font-size:13px;
-}
-
-/* Slightly bigger controls on small screens */
-@media (max-width: 480px){
-  .dpad{ width:240px; gap:12px; }
-  .dpad .key{ height:72px; min-width:72px; font-size:26px; }
-}
-/* Tighten spacing for arrow buttons */
-.pad button {
-  margin: 2px; /* less gap between buttons */
-}
-
-.pad {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 150px; /* keeps them closer */
-  margin: 0 auto;
+  gap: 4px;      /* row spacing; use 0 for touching */
+  user-select: none;
 }
 </style>
 
@@ -693,6 +649,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
