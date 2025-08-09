@@ -157,9 +157,38 @@
 .game-card .pad{
   margin-top:10px;
 }
+  /* Game + Leaderboard layout */
+.game.two-col{
+  margin: 56px auto 24px;      /* separates from sections above & centers */
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px){
+  .game.two-col{ grid-template-columns: 1fr; }
+}
+
+/* Cards styling (match your theme) */
+.game-card, .leaderboard-card{
+  border: 2px solid #b2e0b2;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+/* Center canvas nicely */
+#gameCanvas{ display:block; margin:8px auto 0; }
+.game-card .hint{ color:#667085; margin:8px 0 0; }
+.game-card .pad{ margin-top:10px; }
+
+/* Leaderboard list */
+.lb{ margin:8px 0; padding-left:20px; }
+.lb li{ margin:6px 0; }
 </style>
 
-<section class="game">
+<section class="game two-col">
+  <!-- LEFT: Game -->
   <div class="card game-card">
     <h2>Feed Tosha Mini-Game</h2>
 
@@ -171,13 +200,17 @@
       <button onclick="press('ArrowDown')">⬇️</button>
       <button onclick="press('ArrowRight')">➡️</button>
     </div>
-        <div style="margin-top:14px;">
+
+    <div style="margin-top:14px;">
       <button id="saveScoreBtn" class="btn light">Save Score to Leaderboard</button>
     </div>
-
-    <h3 style="margin-top:18px;">Leaderboard (Top 10)</h3>
-    <ol id="leaderboard" style="padding-left:18px;margin:8px 0;"></ol>
   </div>
+
+  <!-- RIGHT: Leaderboard -->
+  <aside class="card leaderboard-card">
+    <h2>Leaderboard</h2>
+    <ol id="leaderboard" class="lb"></ol>
+  </aside>
 </section>
 
 <!-- Firebase v9 CDN -->
@@ -390,6 +423,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
