@@ -231,17 +231,33 @@
   };
 
   // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-  // ✅ Add App Check with reCAPTCHA v3
-  const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LeBOqArAAAAAOj5LSuGNQ7a1wAQdNlX67Y2uYa4'), // replace with your site key
-    isTokenAutoRefreshEnabled: true
+// ✅ App Check first
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6LeBOqArAAAAAOj5LSuGNQ7a1wAQdNlX67Y2uYa4'),
+  isTokenAutoRefreshEnabled: true
+});
+
+// Firestore setup (after App Check init)
+const db = getFirestore(app);
+const scoresCol = collection(db, "tosha_scores");
+
+// Wait for DOM ready before starting queries
+document.addEventListener("DOMContentLoaded", () => {
+  const lbList = document.getElementById("leaderboard");
+  const topQ = query(scoresCol, orderBy("score", "desc"), limit(10));
+  onSnapshot(topQ, (snap) => {
+    lbList.innerHTML = "";
+    let rank = 1;
+    snap.forEach(doc => {
+      const { name, score } = doc.data();
+      const li = document.createElement("li");
+      li.textContent = `#${rank++} ${name || "Anon Cat"} — ${score}`;
+      lbList.appendChild(li);
+    });
   });
-
-  // Firestore setup
-  const db  = getFirestore(app);
-  const scoresCol = collection(db, "tosha_scores");
+});
 
   // --- Leaderboard: live top 10 ---
   const lbList = document.getElementById("leaderboard");
@@ -430,6 +446,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
