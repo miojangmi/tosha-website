@@ -185,6 +185,53 @@
 /* Leaderboard list */
 .lb{ margin:8px 0; padding-left:20px; }
 .lb li{ margin:6px 0; }
+  /* Pretty D-pad */
+.dpad{
+  margin-top:12px;
+  width:220px;
+  margin-left:auto; margin-right:auto;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows:    1fr 1fr;
+  gap:10px;
+  user-select:none;
+}
+.dpad .spacer{ pointer-events:none }
+
+.dpad .key{
+  height:64px; min-width:64px;
+  border:0;
+  border-radius:18px;
+  font-size:24px; font-weight:800;
+  background: radial-gradient(120% 160% at 30% 20%, #ffffff 0%, #e8f8ef 60%, #c9eedc 100%);
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.7);
+  color:#216b44;
+  cursor:pointer;
+  transition: transform .06s ease, box-shadow .12s ease;
+  touch-action: none;        /* prevents scroll while dragging */
+}
+.dpad .key:active{
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.12),
+    inset 0 2px 8px rgba(0,0,0,.18);
+}
+
+.mobile-hint{
+  margin-top:8px;
+  color:#667085;
+  text-align:center;
+  font-size:13px;
+}
+
+/* Slightly bigger controls on small screens */
+@media (max-width: 480px){
+  .dpad{ width:240px; gap:12px; }
+  .dpad .key{ height:72px; min-width:72px; font-size:26px; }
+}
+
 </style>
 
 <section class="game two-col">
@@ -201,12 +248,16 @@
     </div>
 
     <p class="hint">Use arrow keys to move Tosha 🐾</p>
-    <div class="pad">
-      <button onclick="press('ArrowUp')">⬆️</button>
-      <button onclick="press('ArrowLeft')">⬅️</button>
-      <button onclick="press('ArrowDown')">⬇️</button>
-      <button onclick="press('ArrowRight')">➡️</button>
-    </div>
+<!-- Controls -->
+<div class="pad dpad" id="dpad">
+  <button class="key up"    data-key="ArrowUp"    aria-label="Up">▲</button>
+  <div class="spacer"></div>
+  <button class="key right" data-key="ArrowRight" aria-label="Right">▶</button>
+  <button class="key left"  data-key="ArrowLeft"  aria-label="Left">◀</button>
+  <div class="spacer"></div>
+  <button class="key down"  data-key="ArrowDown"  aria-label="Down">▼</button>
+</div>
+<p class="mobile-hint">Tip: tap & hold the arrows on mobile</p>
 
     <div style="margin-top:14px;">
       <button id="saveScoreBtn" class="btn light">Save Score to Leaderboard</button>
@@ -353,6 +404,60 @@ function press(k){
 }
 </script>
 
+<script>
+// Hold-to-move on mobile + desktop
+(function(){
+  const dpad = document.getElementById('dpad');
+  if (!dpad) return;
+
+  let holdTimer = null;
+  let repeatTimer = null;
+
+  function startHold(key){
+    // initial press
+    window.dispatchEvent(new KeyboardEvent('keydown',{key}));
+    // then auto-repeat while holding
+    repeatTimer = setInterval(()=> {
+      window.dispatchEvent(new KeyboardEvent('keydown',{key}));
+    }, 120);
+  }
+  function endHold(key){
+    clearInterval(repeatTimer); repeatTimer = null;
+    window.dispatchEvent(new KeyboardEvent('keyup',{key}));
+  }
+
+  function onPressStart(e){
+    e.preventDefault();
+    const btn = e.currentTarget;
+    const key = btn.dataset.key;
+    if (!key || window.__gameOver) return;
+
+    btn.classList.add('active');
+    startHold(key);
+
+    const end = ()=>{ btn.classList.remove('active'); endHold(key); cleanup(); };
+    function cleanup(){
+      btn.removeEventListener('mouseup', end);
+      btn.removeEventListener('mouseleave', end);
+      btn.removeEventListener('touchend', end);
+      btn.removeEventListener('touchcancel', end);
+    }
+
+    btn.addEventListener('mouseup', end);
+    btn.addEventListener('mouseleave', end);
+    btn.addEventListener('touchend', end, {passive:false});
+    btn.addEventListener('touchcancel', end, {passive:false});
+  }
+
+  // attach handlers for both mouse and touch
+  dpad.querySelectorAll('.key').forEach(btn=>{
+    btn.addEventListener('mousedown', onPressStart);
+    btn.addEventListener('touchstart', onPressStart, {passive:false});
+  });
+})();
+</script>
+
+    
 <script>
 window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
@@ -578,6 +683,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
