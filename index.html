@@ -171,9 +171,81 @@
       <button onclick="press('ArrowDown')">⬇️</button>
       <button onclick="press('ArrowRight')">➡️</button>
     </div>
+        <div style="margin-top:14px;">
+      <button id="saveScoreBtn" class="btn light">Save Score to Leaderboard</button>
+    </div>
+
+    <h3 style="margin-top:18px;">Leaderboard (Top 10)</h3>
+    <ol id="leaderboard" style="padding-left:18px;margin:8px 0;"></ol>
   </div>
 </section>
-  
+
+<!-- Firebase v9 CDN -->
+<script type="module">
+  // 🔧 Replace with your own config from Firebase console
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbiPviAVeEA9EHPczK0pUIpSDOWaVUOVQ",
+    authDomain: "tosha-e8f91.firebaseapp.com",
+    projectId: "tosha-e8f91",
+    storageBucket: "tosha-e8f91.firebasestorage.app",
+    messagingSenderId: "151122614360",
+    appId: "1:151122614360:web:ac3fa952e2d4fde01b522d"
+  };
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, serverTimestamp,
+    query, orderBy, limit, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const scoresCol = collection(db, "tosha_scores");
+
+  // --- Leaderboard: live top 10 ---
+  const lbList = document.getElementById("leaderboard");
+  const topQ = query(scoresCol, orderBy("score", "desc"), limit(10));
+  onSnapshot(topQ, (snap) => {
+    lbList.innerHTML = "";
+    let rank = 1;
+    snap.forEach(doc => {
+      const { name, score } = doc.data();
+      const li = document.createElement("li");
+      li.textContent = `#${rank++} ${name || "Anon Cat"} — ${score}`;
+      lbList.appendChild(li);
+    });
+  });
+
+  // Expose a save function for your existing game script to call
+  window.saveScore = async function(score){
+    let name = localStorage.getItem("tosha_player_name") || "";
+    if (!name) {
+      name = prompt("Enter a name for the leaderboard (max 16 chars):", "ToshaFan");
+      if (!name) return; // cancelled
+      name = name.trim().slice(0,16);
+      localStorage.setItem("tosha_player_name", name);
+    }
+    try {
+      await addDoc(scoresCol, {
+        name,
+        score: Math.max(0, Math.floor(score)),
+        createdAt: serverTimestamp()
+      });
+      alert("Score saved! 😺");
+    } catch(e){
+      console.error(e);
+      alert("Couldn’t save score. Try again later.");
+    }
+  };
+
+  // Hook up button
+  document.getElementById("saveScoreBtn")?.addEventListener("click", ()=>{
+    // assumes you keep `score` in a global or can read it—see below
+    if (window.currentScore == null) return alert("Play first, then save!");
+    window.saveScore(window.currentScore);
+  });
+</script>
+    
 <script>
 function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
 </script>
@@ -195,7 +267,8 @@ snackImg.onerror = () => console.error('❌ snack not found at', snackImg.src);
 snackImg.src = 'snack.png'; // <-- adjust path
 
   // ---- STATE ----
-  let x = c.width/2, y = c.height/2, score = 0, dir = 1;
+ let x = c.width/2, y = c.height/2, score = 0, dir = 1;
+window.currentScore = 0; // ✅ make score accessible to leaderboard
   const keys = {};
   const COLS = 3;                        // your sheet has 3 usable frames
   const FRAME_MS = 100;
@@ -230,11 +303,12 @@ snackImg.src = 'snack.png'; // <-- adjust path
       frame = 0;
     }
 
-    if (Math.hypot(x - snack.x, y - snack.y) < 28) {
-      score++;
-      snack.x = 20 + Math.random() * (c.width  - 40);
-      snack.y = 20 + Math.random() * (c.height - 40);
-    }
+if (Math.hypot(x - snack.x, y - snack.y) < 28) {
+  score++;
+  window.currentScore = score; // ✅ keep leaderboard score updated
+  snack.x = 20 + Math.random() * (c.width  - 40);
+  snack.y = 20 + Math.random() * (c.height - 40);
+}
   }
 
   function drawCat(){
@@ -290,7 +364,8 @@ function drawSnack(){
   window.addEventListener('keyup', e => { keys[e.key] = false; });
 });
 </script>
-  
+
+    
     <section class="full">
       <div class="card">
         <h2>Meme Gallery</h2>
@@ -315,6 +390,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
