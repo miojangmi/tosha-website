@@ -193,6 +193,13 @@
     <h2>Feed Tosha Mini-Game</h2>
 
     <canvas id="gameCanvas" width="320" height="320" tabindex="0" style="outline:none"></canvas>
+
+    <div class="hud" style="text-align:center;margin-top:8px;">
+      <span id="timer" style="font-weight:700;">01:00</span>
+      <button id="startBtn" class="btn light" style="margin-left:8px;">Start</button>
+      <button id="restartBtn" class="btn light" style="margin-left:8px; display:none;">Restart</button>
+    </div>
+
     <p class="hint">Use arrow keys to move Tosha 🐾</p>
     <div class="pad">
       <button onclick="press('ArrowUp')">⬆️</button>
@@ -309,7 +316,7 @@
   };
 
   // (Optional) enable/disable the Save button until signed in
-  const saveBtn = document.getElementById("saveScoreBtn");
+  if (saveBtn) saveBtn.style.display = "none"; // hide manual save button
   if (saveBtn) saveBtn.disabled = true;
   onAuthStateChanged(auth, (u) => {
     if (saveBtn) saveBtn.disabled = !u;
@@ -324,34 +331,93 @@
 </script>
     
 <script>
-function press(k){ window.dispatchEvent(new KeyboardEvent('keydown',{key:k})); setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120); }
+function press(k){
+  if (window.__gameOver) return; // block presses when game over/paused
+  window.dispatchEvent(new KeyboardEvent('keydown',{key:k}));
+  setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keyup',{key:k})),120);
+}
 </script>
-  
+
 <script>
 window.addEventListener('load', () => {
   const c = document.getElementById('gameCanvas');
   const ctx = c.getContext('2d');
   c.focus();
 
-  // ---- ASSETS (adjust paths to where files actually are) ----
+  // ---- TIMER / GAME STATE ----
+  const TIME_LIMIT_MS = 60_000;   // change duration here (e.g., 90_000 for 1.5 min)
+  let startTime = null;
+  let remainingMs = TIME_LIMIT_MS;
+  let gameOver = true;            // start paused
+  window.__gameOver = true;       // also exported for press()
+
+  const timerEl = document.getElementById('timer');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+
+  function formatTime(ms){
+    const s = Math.max(0, Math.ceil(ms/1000));
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s % 60).padStart(2,'0');
+    return `${mm}:${ss}`;
+  }
+  function updateTimerUI(){
+    if (timerEl) timerEl.textContent = formatTime(remainingMs);
+  }
+
+  function startGame(){
+    // reset score & reposition snack for fresh run
+    score = 0;
+    window.currentScore = 0;
+    snack.x = 20 + Math.random() * (c.width  - 40);
+    snack.y = 20 + Math.random() * (c.height - 40);
+
+    // reset timer
+    startTime = performance.now();
+    remainingMs = TIME_LIMIT_MS;
+    gameOver = false;
+    window.__gameOver = false;
+    updateTimerUI();
+
+    // UI
+    if (startBtn) startBtn.style.display = 'none';
+    if (restartBtn) restartBtn.style.display = 'inline-block';
+  }
+
+  function endGame(){
+    gameOver = true;
+    window.__gameOver = true;
+    updateTimerUI();
+  // Auto-save when time is up
+if (window.currentScore != null && typeof window.saveScore === 'function') {
+  window.saveScore(window.currentScore);
+}
+    alert(`Time! Final score: ${score}`);
+  }
+
+  // Buttons
+  startBtn?.addEventListener('click', startGame);
+  restartBtn?.addEventListener('click', startGame);
+
+  // ---- ASSETS ----
   const sheet = new Image();
-  sheet.src = 'cat_walk.png';           // e.g. 'assets/cat_walk.png'
+  sheet.src = 'cat_walk.png';
   sheet.onerror = () => console.error('❌ cat_walk not found at:', sheet.src);
 
-const snackImg = new Image();
-snackImg.onload  = () => console.log('✅ snack loaded', snackImg.naturalWidth, snackImg.naturalHeight);
-snackImg.onerror = () => console.error('❌ snack not found at', snackImg.src);
-snackImg.src = 'snack.png'; // <-- adjust path
+  const snackImg = new Image();
+  snackImg.onload  = () => console.log('✅ snack loaded', snackImg.naturalWidth, snackImg.naturalHeight);
+  snackImg.onerror = () => console.error('❌ snack not found at', snackImg.src);
+  snackImg.src = 'snack.png';
 
   // ---- STATE ----
- let x = c.width/2, y = c.height/2, score = 0, dir = 1;
-window.currentScore = 0; // ✅ make score accessible to leaderboard
+  let x = c.width/2, y = c.height/2, score = 0, dir = 1;
+  window.currentScore = 0; // leaderboard visibility
   const keys = {};
-  const COLS = 3;                        // your sheet has 3 usable frames
+  const COLS = 3;
   const FRAME_MS = 100;
 
   let frame = 0, acc = 0, FW = 0, FH = 0;
-  let spriteReady = false, snackReady = false;
+  let spriteReady = false;
 
   sheet.onload = () => {
     FW = sheet.width / COLS;
@@ -359,12 +425,23 @@ window.currentScore = 0; // ✅ make score accessible to leaderboard
     spriteReady = true;
     console.log('✅ cat sheet loaded:', sheet.width+'x'+sheet.height, 'FW', FW, 'FH', FH);
   };
-  snackImg.onload = () => { snackReady = true; };
 
   // snack
   let snack = { x: 60, y: 60 };
 
   function update(dt){
+    // stop logic when game is over
+    if (gameOver) return;
+
+    // timer tick
+    const now = performance.now();
+    remainingMs = TIME_LIMIT_MS - (now - startTime);
+    if (remainingMs <= 0){
+      remainingMs = 0;
+      endGame();
+      return;
+    }
+
     const sp = 3;
     const moving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight;
 
@@ -380,19 +457,19 @@ window.currentScore = 0; // ✅ make score accessible to leaderboard
       frame = 0;
     }
 
-if (Math.hypot(x - snack.x, y - snack.y) < 28) {
-  score++;
-  window.currentScore = score; // ✅ keep leaderboard score updated
-  snack.x = 20 + Math.random() * (c.width  - 40);
-  snack.y = 20 + Math.random() * (c.height - 40);
-}
+    if (Math.hypot(x - snack.x, y - snack.y) < 28) {
+      score++;
+      window.currentScore = score;
+      snack.x = 20 + Math.random() * (c.width  - 40);
+      snack.y = 20 + Math.random() * (c.height - 40);
+    }
   }
 
   function drawCat(){
     if (spriteReady) {
-const TARGET_H = 110;
-const scale = TARGET_H / FH;
-const TARGET_W = FW * scale;
+      const TARGET_H = 110;
+      const scale = TARGET_H / FH;
+      const TARGET_W = FW * scale;
       const sx = frame * FW;
 
       ctx.save();
@@ -407,33 +484,36 @@ const TARGET_W = FW * scale;
     }
   }
 
-function drawSnack(){
-  const size = 36;              // change size if you want
-  if (snackImg.complete && snackImg.naturalWidth > 0) {
-    ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
-  } else {
-    // temporary fallback while it loads; remove once working
-    ctx.fillStyle = '#00c47d';
-    ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
+  function drawSnack(){
+    const size = 36;
+    if (snackImg.complete && snackImg.naturalWidth > 0) {
+      ctx.drawImage(snackImg, snack.x - size/2, snack.y - size/2, size, size);
+    } else {
+      ctx.fillStyle = '#00c47d';
+      ctx.beginPath(); ctx.arc(snack.x, snack.y, size/2, 0, Math.PI*2); ctx.fill();
+    }
   }
-}
 
   let last = performance.now();
   function loop(now = performance.now()){
     const dt = now - last; last = now;
     update(dt);
+
     ctx.clearRect(0,0,c.width,c.height);
     drawSnack();
     drawCat();
     ctx.fillStyle = '#222'; ctx.font = '14px Poppins, sans-serif';
     ctx.fillText('Score: ' + score, 10, 20);
+
+    updateTimerUI(); // keep DOM timer fresh
+
     requestAnimationFrame(loop);
   }
-  // start immediately (no dependency on image onload)
   loop();
 
   // controls
   window.addEventListener('keydown', e => {
+    if (gameOver) return; // ignore when not running
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
       keys[e.key] = true; e.preventDefault();
     }
@@ -467,6 +547,7 @@ function drawSnack(){
   </script>
 </body>
 </html>
+
 
 
 
