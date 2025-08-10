@@ -186,23 +186,41 @@
 .lb{ margin:8px 0; padding-left:20px; }
 .lb li{ margin:6px 0; }
   /* Pretty D-pad */
-.dpad {
+/* Compact 2×2 grid for the arrows */
+.dpad{
   margin: 10px auto 0;
   display: grid;
-  grid-template-columns: repeat(2, 68px); /* same size as buttons */
-  grid-auto-rows: 68px;
-  gap: 4px; /* ← reduce this to 2px or even 0px for tighter spacing */
+  grid-template-columns: repeat(2, 68px); /* button width */
+  grid-auto-rows: 68px;                   /* button height */
+  gap: 6px;                               /* set 2–4px for tighter; 0px for touching */
   justify-content: center;
   user-select: none;
 }
 
-  /* 👇 Narrow middle column so buttons sit close */
-  grid-template-columns: auto 8px auto;  /* center column only 8px */
-  grid-template-rows: auto auto;         /* buttons define height */
-
-  gap: 4px;      /* row spacing; use 0 for touching */
-  user-select: none;
+/* Pretty rounded buttons */
+.dpad .key{
+  width: 68px;
+  height: 68px;
+  border: none;
+  border-radius: 18px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #216b44; /* arrow color */
+  background: radial-gradient(120% 160% at 30% 20%, #ffffff 0%, #e8f8ef 60%, #c9eedc 100%);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.75);
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .12s ease;
+  touch-action: none;
 }
+.dpad .key:active{
+  transform: translateY(1px) scale(.98);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.12),
+    inset 0 2px 8px rgba(0,0,0,.18);
+}
+
 </style>
 
 <section class="game two-col">
@@ -221,10 +239,8 @@
     <p class="hint">Use arrow keys to move Tosha 🐾</p>
 <!-- Controls -->
 <div class="pad dpad" id="dpad">
-  <!-- row 1 -->
   <button class="key up"    data-key="ArrowUp"    aria-label="Up">▲</button>
   <button class="key right" data-key="ArrowRight" aria-label="Right">▶</button>
-  <!-- row 2 -->
   <button class="key left"  data-key="ArrowLeft"  aria-label="Left">◀</button>
   <button class="key down"  data-key="ArrowDown"  aria-label="Down">▼</button>
 </div>
@@ -653,6 +669,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
