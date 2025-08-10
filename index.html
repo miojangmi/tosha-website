@@ -220,13 +220,13 @@
     0 4px 10px rgba(0,0,0,.12),
     inset 0 2px 8px rgba(0,0,0,.18);
 }
-  .leaderboard-art {
+ .leaderboard-art {
   text-align: center;
-  margin-top: 20px;
+  margin-bottom: 12px; /* space below trophy */
 }
 
 .leaderboard-art img {
-  max-width: 100px;
+  max-width: 140px; /* bigger */
   height: auto;
   opacity: 0.95;
   transition: transform 0.2s ease;
@@ -268,12 +268,11 @@
   <!-- RIGHT: Leaderboard -->
 <aside class="card leaderboard-card">
   <h2>Leaderboard</h2>
-  <ol id="leaderboard" class="lb"></ol>
 
-  <!-- Trophy image -->
-  <div class="leaderboard-art">
-    <img src="trophy.png" alt="Trophy" />
-  </div>
+<div class="leaderboard-art">
+  <img src="trophy.png" alt="Trophy" />
+</div>
+<ol id="leaderboard" class="lb"></ol>
 </aside>
 </section>
 
@@ -689,6 +688,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
