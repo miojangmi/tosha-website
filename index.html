@@ -245,6 +245,24 @@
   transform: scale(1.05);
 }
 
+  /* Meme gallery grid */
+.meme-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.meme-gallery img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.meme-gallery img:hover {
+  transform: scale(1.05);
+}
 </style>
 
 <section class="game two-col">
@@ -674,10 +692,17 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
 
     
     <section class="full">
-      <div class="card">
-        <h2>Meme Gallery</h2>
-        <p>Coming soon — the fluffiest memes on the blockchain. 😸</p>
-      </div>
+<div class="card">
+    <h2>Meme Gallery</h2>
+    <div class="meme-gallery">
+      <img src="meme1.jpg" alt="Meme 1">
+      <img src="meme2.jpg" alt="Meme 2">
+      <img src="meme3.jpg" alt="Meme 3">
+      <img src="meme4.jpg" alt="Meme 4">
+      <img src="meme5.jpg" alt="Meme 5">
+      <img src="meme6.jpg" alt="Meme 6">
+    </div>
+  </div>
     </section>
 
     <footer>
@@ -697,6 +722,7 @@ if (window.currentScore != null && typeof window.saveScore === 'function') {
   </script>
 </body>
 </html>
+
 
 
 
